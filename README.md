@@ -1,25 +1,18 @@
-# FastBox Delivery System Simulator
+# FastBox Delivery System
 
-A lightweight, robust logistics simulator designed for **FastBox**, simulating a day of operations across multiple warehouses, delivery agents, and packages.
+## Problem
 
-Built for the **Nexgensis Technologies Python Developer Assignment** with simplicity, clarity, and standard library principles.
+FastBox operates a delivery network with multiple warehouses, delivery agents, and packages. The goal is to simulate one day of delivery operations, assigning packages to nearest agents, calculating travel distances and efficiencies, and generating an operational report.
 
----
+## Solution
 
-## Features
+The system processes deliveries through a five-stage pipeline:
 
-- **Dual-Format JSON Normalization:** Seamlessly loads and normalizes both `list-of-dicts` (`base_case.json`) and `dict` schemas (`test_case_*.json`).
-- **Nearest-Agent Package Assignment:** Evaluates Euclidean distance from agent start positions to warehouses with deterministic tie-breaking and per-warehouse result caching.
-- **Chained Sequential Simulation:** Models real-world sequential delivery trips where an agent travels `current_position -> warehouse -> destination`, remaining at the destination for subsequent pickups.
-- **Full-Precision Internals:** Preserves complete floating-point accuracy during travel simulation, rounding metrics (`total_distance`, `efficiency`) only when generating `report.json`.
-- **Zero Third-Party Runtime Dependencies:** 100% standard library (`math`, `json`, `os`, `sys`, `csv`, `random`).
-- **All 4 Assignment Bonuses Implemented:**
-  1. *Random Delivery Delays* (`src/fastbox/delays.py`)
-  2. *2D ASCII Map Visualization* (`src/fastbox/visualization.py`)
-  3. *Top Performer CSV Export* (`src/fastbox/export.py`)
-  4. *Mid-Day Dynamic Agent Joining* (`src/fastbox/mid_day.py`)
-
----
+1. **JSON Input**: Reads warehouse, agent, and package records from a JSON file.
+2. **Normalization**: Auto-detects the input schema (`list-of-dicts` or `dict`) and normalizes it into a consistent internal dictionary format while validating coordinates, types, and referential integrity.
+3. **Nearest-Agent Assignment**: Maps each package to the nearest agent to that package's warehouse using 2D Euclidean distance, caching warehouse-to-agent lookups.
+4. **Delivery Simulation**: Simulates chained, sequential delivery trips per agent (`current_position -> warehouse -> destination`), updating the agent's location after each delivery.
+5. **Report Generation**: Computes delivered package counts, total travel distances, and efficiency scores per agent, selects the best agent, and writes `report.json`.
 
 ## Project Structure
 
@@ -28,123 +21,135 @@ assignment/
 ├── src/
 │   └── fastbox/
 │       ├── __init__.py           # Package exports
+│       ├── parser.py             # JSON loading, schema normalization, validation
 │       ├── distance.py           # 2D Euclidean distance calculation
-│       ├── parser.py             # Schema normalization and strict validation
 │       ├── assignment.py         # Nearest-agent mapping with warehouse caching
 │       ├── simulation.py         # Chained trip simulation and report generation
 │       ├── delays.py             # Bonus 1: Reproducible delivery delay simulation
 │       ├── visualization.py      # Bonus 2: 2D ASCII grid rendering
 │       ├── export.py             # Bonus 3: Top performer CSV export
-│       └── mid_day.py            # Bonus 4: Mid-day dynamic fleet expansion
+│       └── mid_day.py            # Bonus 4: Dynamic mid-day agent joining
 ├── tests/
-│   ├── __init__.py
-│   ├── test_distance.py          # Distance metric unit tests
-│   ├── test_parser.py            # Schema normalization and validation tests
-│   ├── test_assignment.py        # Assignment and tie-breaking tests
-│   ├── test_simulation.py        # Chained delivery and best-agent tests
-│   ├── test_delays.py            # Delivery delays unit tests
-│   ├── test_visualization.py     # ASCII visualization unit tests
-│   ├── test_export.py            # CSV export unit tests
-│   └── test_mid_day.py           # Mid-day join unit tests
+│   ├── test_parser.py            # Normalization and validation tests
+│   ├── test_distance.py          # Distance metric tests
+│   ├── test_assignment.py        # Nearest-agent and tie-breaking tests
+│   ├── test_simulation.py        # Chained routing and report tests
+│   ├── test_delays.py            # Delay calculation tests
+│   ├── test_visualization.py     # ASCII visualization tests
+│   ├── test_export.py            # CSV export tests
+│   └── test_mid_day.py           # Mid-day join tests
 ├── Python Assignment(Delivery System Test Cases)/
-│   └── test_case_*.json          # 10 provided evaluation test cases
+│   └── test_case_*.json          # 10 supplied test cases (dict format)
 ├── main.py                       # CLI entry point
 ├── data.json                     # Default assignment input (dict format)
-├── base_case.json                # Base test case (list format)
-├── report.json                   # Generated simulation report
-├── top_performer.csv             # Exported best agent summary
-├── requirements.txt              # Dependency specification (std-lib runtime)
-├── ASSUMPTIONS.md                # Documented design decisions & discrepancy analysis
-├── AGENTS.md                     # Project coding rules
-└── .gitignore                    # Python cache and artifact ignore rules
+├── base_case.json                # Supplied base test case (list format)
+├── report.json                   # Output report generated by simulation
+├── top_performer.csv             # Exported summary of the best agent
+├── requirements.txt              # Project dependencies (standard library only)
+├── ASSUMPTIONS.md                # Documented ambiguities and decisions
+└── AGENTS.md                     # Project coding guidelines
 ```
 
----
+## How to Run
 
-## Getting Started
-
-### Prerequisites
-
-- **Python 3.10+** (Tested on Python 3.11.9)
-- No third-party packages are required to run the simulation.
-
-Optional: To use `pytest` as the test runner:
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Usage
-
-### 1. Basic Execution (Core Assignment)
-
-Run the simulation on the default input file (`data.json` or `base_case.json`):
+Run the simulation using Python 3.10+:
 
 ```bash
+# Default run (uses data.json if present, otherwise base_case.json):
 python main.py
-```
 
-Run on a specific input file:
-
-```bash
-# Run on base case:
+# Run on a specific input file:
 python main.py base_case.json
 
 # Run on any provided test case:
 python main.py "Python Assignment(Delivery System Test Cases)/test_case_1.json"
-```
 
-Specify a custom report output path:
-
-```bash
+# Specify a custom output path:
 python main.py base_case.json custom_report.json
-```
 
-### 2. Running with Optional Bonus Features
-
-Enable optional bonus features via CLI flags:
-
-```bash
-# Enable ASCII map visualization:
-python main.py base_case.json --ascii
-
-# Export top performer to CSV:
-python main.py base_case.json --export-csv
-
-# Simulate delivery delays:
-python main.py base_case.json --delays
-
-# Run all bonus features simultaneously:
+# Run with optional bonus features enabled:
 python main.py base_case.json report.json --ascii --export-csv --delays
 ```
 
----
+## How to Run Tests
 
-## Running Tests
+Run the complete test suite (49 unit tests) with `pytest`:
 
-Run the complete test suite (49 unit tests) with Python's built-in test runner:
+```bash
+pytest
+```
+
+Alternatively, run with Python's built-in `unittest` runner (zero dependencies required):
 
 ```bash
 python -m unittest discover tests
 ```
 
-Or using `pytest`:
+## Input Handling
 
-```bash
-python -m pytest -v
-```
+The parser automatically detects and normalizes two conflicting JSON schemas present in the assignment files:
 
----
+- **List-of-dicts format** (`base_case.json`):
+  `warehouses` and `agents` are lists of objects (`[{"id": "W1", "location": [x, y]}]`), and packages use the key `"warehouse_id"`.
+- **Dictionary format** (`data.json`, `test_case_*.json`):
+  `warehouses` and `agents` are key-value mappings (`{"W1": [x, y]}`), and packages use the key `"warehouse"`.
 
-## Key Design Decisions & Verified Discrepancy
+Both schemas are converted into uniform internal dictionaries keyed by ID, with packages uniformly referencing `"warehouse"`. Coordinates are validated as 2-element numeric sequences and stored as immutable `(float, float)` tuples.
 
-1. **PDF Sample Numbers Discrepancy:**
-   The illustrative sample report in the PDF (`A1: 85.32, A2: 120.12, A3: 50.00`) does not match Euclidean travel under either chained delivery or independent trips for the provided coordinates. In accordance with hiring assignment best practices, the written routing rules are implemented directly. See [ASSUMPTIONS.md](file:///c:/Users/Aatif/Downloads/assignment/ASSUMPTIONS.md) for full mathematical verification.
+## Distance Calculation
 
-2. **Deterministic Tie-Breaking:**
-   - For equidistant agents to a warehouse, the agent whose ID sorts first lexicographically (e.g., `"A1"` before `"A2"`) is selected.
-   - For `best_agent`, only agents with `packages_delivered > 0` are eligible; lowest efficiency wins, with higher package volume as secondary tie-breaker.
+Distance between any two 2D points $(x_1, y_1)$ and $(x_2, y_2)$ is calculated using standard Euclidean distance:
 
-3. **Validation:**
-   Inputs are validated against missing keys, malformed or boolean coordinates, unknown warehouse references, and duplicate entity IDs, raising informative `ValueError` exceptions.
+$$\text{distance} = \sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$$
+
+Implemented in [src/fastbox/distance.py](file:///c:/Users/Aatif/Downloads/assignment/src/fastbox/distance.py) via `math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)`.
+
+## Assignment Logic
+
+For each package, the simulator identifies which agent has the shortest Euclidean distance from their starting position to that package's warehouse.
+
+- Because multiple packages often share a warehouse, the resolved nearest agent is cached per warehouse to prevent duplicate calculations.
+- If multiple agents are equidistant to a warehouse, the agent whose ID sorts first lexicographically (e.g., `"A1"` before `"A2"`) is selected.
+- Every package is assigned to exactly one agent.
+
+## Delivery Logic
+
+Deliveries are executed sequentially per agent in the order packages were assigned:
+
+1. The agent starts at their initial position.
+2. For each package:
+   - Agent travels from their **current position** to the **package's warehouse**.
+   - Agent travels from the **warehouse** to the **package's destination**.
+   - Total travel distance increments by the sum of both legs.
+3. The agent **remains at the destination**, which becomes their starting position for the next assigned package.
+
+No Travelling Salesperson (TSP) route reordering is performed, matching the problem description.
+
+## Report
+
+- **`report.json`**: Contains summary statistics for each agent:
+  - `packages_delivered`: Integer count of delivered packages.
+  - `total_distance`: Cumulative travel distance rounded to 2 decimal places.
+  - `efficiency`: `total_distance / packages_delivered` rounded to 2 decimal places (or `0.0` for 0 deliveries).
+  - `best_agent`: The active agent with the lowest efficiency score (least distance per package).
+- **`top_performer.csv`**: When generated via `--export-csv`, exports the `best_agent` record to CSV with columns: `agent_id,packages_delivered,total_distance,efficiency`.
+
+## Bonus Features
+
+1. **Random Delays (`src/fastbox/delays.py`)**: Simulates traffic or handover delays in minutes. Supports an optional seed for reproducibility. Delays are tracked independently and do not alter physical travel distances.
+2. **ASCII Map (`src/fastbox/visualization.py`)**: Renders warehouses (`W`), agent starts (`A`), and package destinations (`P`) onto a normalized 2D text grid with an explanatory legend.
+3. **Top Performer CSV (`src/fastbox/export.py`)**: Writes the best performing agent's stats to `top_performer.csv`. Handles zero-delivery scenarios safely.
+4. **Mid-Day Agent Join (`src/fastbox/mid_day.py`)**: Simulates a new agent joining mid-day after an initial batch of packages has been delivered. Remaining packages are reassigned across the expanded fleet.
+
+## Assumptions
+
+For a full list of interpretations, edge case handling, and analysis of the sample numbers discrepancy in the PDF, refer to [ASSUMPTIONS.md](file:///c:/Users/Aatif/Downloads/assignment/ASSUMPTIONS.md).
+
+## Testing
+
+The test suite includes 49 unit tests covering:
+- Parsing, schema normalization, and malformed input handling.
+- Euclidean distance calculation edge cases (identical points, negatives, symmetry).
+- Nearest-agent assignment, equidistant tie-breaking, and package conservation.
+- Sequential chained delivery simulation and best agent selection.
+- End-to-end execution across `base_case.json`, `data.json`, and all 10 supplied `test_case_*.json` files.

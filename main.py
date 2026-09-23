@@ -21,6 +21,7 @@ import sys
 # Ensure src/ is on Python search path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
 
+from fastbox.assignment import assign_packages
 from fastbox.delays import calculate_agent_delays, simulate_delays
 from fastbox.export import export_top_performer_to_csv
 from fastbox.parser import load_data
@@ -87,7 +88,6 @@ def main() -> int:
         print("BONUS: Delivery Delays Simulation (Seed: 42)")
         print("=" * 50)
         package_delays = simulate_delays(data["packages"], seed=42)
-        from fastbox.assignment import assign_packages
         assignments = assign_packages(data["warehouses"], data["agents"], data["packages"])
         agent_delays = calculate_agent_delays(assignments, package_delays)
         for aid, dstats in agent_delays.items():

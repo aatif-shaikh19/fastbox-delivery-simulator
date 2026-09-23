@@ -1,0 +1,6 @@
+# FastBox Delivery System
+# Built entirely with standard library (math, json, os, sys, csv, random).
+# No external runtime dependencies required for Python 3.10+.
+
+# Optional test runner (built-in unittest is also supported):
+pytest>=8.0.0
